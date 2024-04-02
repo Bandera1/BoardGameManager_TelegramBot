@@ -1,9 +1,9 @@
 ﻿using Telegram.Bot.Types;
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
-using Telegram.Bot.Types.InlineQueryResults;
 using BoardGameManager_bot.Utils;
 using BoardGameManager_bot.Constants;
+using BoardGameManager_bot.Menus.Games;
 
 namespace BoardGames_TelegramBot
 {
@@ -11,6 +11,7 @@ namespace BoardGames_TelegramBot
     {
         public static async Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
         {
+            // Draw start menu
             if (update?.Type == Telegram.Bot.Types.Enums.UpdateType.Message) // Check if it`s message
             {
                 var messageText = CommandUtils.CutTheBotUsername(update.Message.Text);
@@ -22,7 +23,6 @@ namespace BoardGames_TelegramBot
 
                 Console.WriteLine($"Listen: {update.Message.From.Username} | Message: {messageText}");
 
-
                 if (messageText == TelegramBotConstants.START_COMMAND)
                 {
                     await DrawStartMenu(botClient, update, token);
@@ -30,23 +30,7 @@ namespace BoardGames_TelegramBot
                 }
             } else if (update?.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)
             {
-                var queryText = update?.CallbackQuery?.Data;
-
-                if (queryText == null)
-                {
-                    return;
-                }
-
-                Console.WriteLine($"Lister: Bot | Query: {queryText}");
-
-                if (update.CallbackQuery != null)
-                {
-                    await botClient.EditMessageTextAsync(
-                        update.CallbackQuery.Message.Chat.Id,
-                        update.CallbackQuery.Message.MessageId,
-                        "New message");
-                    return;
-                }
+                await QueryHadler(botClient, update, token);
             }       
         }
 
@@ -55,7 +39,11 @@ namespace BoardGames_TelegramBot
             return null;
         }
 
-        private static async Task<Message> DrawStartMenu(ITelegramBotClient botClient, Update update, CancellationToken token)
+        private static async Task<Message> DrawStartMenu(
+            ITelegramBotClient botClient,
+            Update update, CancellationToken token,
+            bool isEdited = false
+            )
         {
             var markup = new InlineKeyboardMarkup(new List<List<InlineKeyboardButton>>()
             {
@@ -84,12 +72,47 @@ namespace BoardGames_TelegramBot
                 }
             });
 
+            if(isEdited)
+            {
+                return await botClient.EditMessageTextAsync(
+                      chatId: update.CallbackQuery.Message.Chat.Id,
+                      messageId: update.CallbackQuery.Message.MessageId,
+                      text: "👋 Welcome in Board Game Manager. There is list of bot features",
+                      replyMarkup: markup
+                      );
+            }
+
             return await botClient.SendTextMessageAsync(
                 chatId: update.Message.Chat.Id,
                 text: "👋 Welcome in Board Game Manager. There is list of bot features",
                 replyToMessageId: update?.Message?.MessageId,
                 replyMarkup: markup
                 );
+        }
+
+        private static async Task QueryHadler(ITelegramBotClient botClient, Update update, CancellationToken token)
+        {
+            var queryText = update?.CallbackQuery?.Data;
+
+            if (queryText == null)
+            {
+                return;
+            }
+
+            Console.WriteLine($"Lister: Bot | Query: {queryText}");
+
+            if (update.CallbackQuery != null)
+            {
+                switch (queryText)
+                {
+                    case TelegramBotConstants.GAMES_LIST_COMMAND:
+                        await GamesListMenu.DrawMenu(botClient, update, token, "");
+                        break;
+                    case TelegramBotConstants.START_COMMAND:
+                        await DrawStartMenu(botClient, update, token, isEdited: true);
+                        break;
+                }
+            }           
         }
     }
 }
