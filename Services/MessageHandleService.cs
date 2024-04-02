@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot;
+using BoardGameManager_bot.Utils;
 
 namespace BoardGames_TelegramBot
 {
@@ -13,18 +14,21 @@ namespace BoardGames_TelegramBot
         public static async Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
         {
             var message = update.Message;
-            if (message?.Text == null)
+            var messageText = CommandUtils.CutTheBotUsername(update?.Message?.Text);
+
+            if (messageText == null)
             {
                 return;
             }
 
-            Console.WriteLine($"Listen: {message.Chat.Username} | Message: {message.Text}");
+            Console.WriteLine($"Listen: {message.Chat.Username} | Message: {messageText}");
 
-            if (message.Text.Equals("/game_list"))
+            if (messageText.Equals("/game_list"))
             {
-                await botClient.SendTextMessageAsync(
+               await botClient.SendTextMessageAsync(
                message.Chat.Id,
-               "Game list");
+               "Game list",
+               replyToMessageId: update.Message.MessageId);
             }
 
             //await botClient.SendTextMessageAsync(
@@ -38,11 +42,6 @@ namespace BoardGames_TelegramBot
             //        text: "Check sendMessage method",
             //        url: "https://core.telegram.org/bots/api#sendmessage")
             //    ));
-
-            await botClient.SendTextMessageAsync(
-                message.Chat.Id,
-                "Підарас",
-                replyToMessageId: update.Message.MessageId);
 
             return;
         }
