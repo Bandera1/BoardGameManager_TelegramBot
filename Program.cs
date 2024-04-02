@@ -12,6 +12,7 @@ internal class Program
         //await botClient.DeleteMyCommandsAsync();
         //await botClient.SetMyCommandsAsync(GetMainCommands());
 
+        await botClient.GetUpdatesAsync();
         botClient.StartReceiving(QueryHandleService.Update, QueryHandleService.Error);
 
         Console.ReadLine();
@@ -28,4 +29,5 @@ internal class Program
             }
         };
     }
+
 }

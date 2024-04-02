@@ -48,7 +48,7 @@ namespace BoardGames_TelegramBot
                 return;
             }
 
-            Console.WriteLine($"Lister: Bot | Query: {queryText}");
+            Console.WriteLine($"Listen: Bot | Query: {queryText}");
 
             if (update.CallbackQuery != null)
             {

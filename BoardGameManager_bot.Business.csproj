@@ -8,7 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="BoardGameManager_bot.DAL\**" />
+    <EmbeddedResource Remove="BoardGameManager_bot.DAL\**" />
+    <None Remove="BoardGameManager_bot.DAL\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Telegram.Bot" Version="19.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="BoardGameManager_bot.DAL\BoardGameManager_bot.DAL.csproj" />
   </ItemGroup>
 
 </Project>
