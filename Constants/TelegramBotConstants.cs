@@ -9,5 +9,6 @@ namespace BoardGameManager_bot.Constants
     public static class TelegramBotConstants
     {
         public static string TELEGRAM_BOT_USERNAME = "@boardGames_pollManager_bot";
+        public static string START_COMMAND = "/show_bot";
     }
 }

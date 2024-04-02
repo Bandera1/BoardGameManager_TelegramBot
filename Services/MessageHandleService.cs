@@ -1,54 +1,95 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Telegram.Bot.Types;
+﻿using Telegram.Bot.Types;
 using Telegram.Bot;
+using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Bot.Types.InlineQueryResults;
 using BoardGameManager_bot.Utils;
+using BoardGameManager_bot.Constants;
 
 namespace BoardGames_TelegramBot
 {
-    public class MessageHandleService
+    public class QueryHandleService
     {
         public static async Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
         {
-            var message = update.Message;
-            var messageText = CommandUtils.CutTheBotUsername(update?.Message?.Text);
-
-            if (messageText == null)
+            if (update?.Type == Telegram.Bot.Types.Enums.UpdateType.Message) // Check if it`s message
             {
-                return;
-            }
+                var messageText = CommandUtils.CutTheBotUsername(update.Message.Text);
 
-            Console.WriteLine($"Listen: {message.Chat.Username} | Message: {messageText}");
+                if(messageText == null)
+                {
+                    return;
+                }
 
-            if (messageText.Equals("/game_list"))
+                Console.WriteLine($"Listen: {update.Message.From.Username} | Message: {messageText}");
+
+
+                if (messageText == TelegramBotConstants.START_COMMAND)
+                {
+                    await DrawStartMenu(botClient, update, token);
+                    return;
+                }
+            } else if (update?.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)
             {
-               await botClient.SendTextMessageAsync(
-               message.Chat.Id,
-               "Game list",
-               replyToMessageId: update.Message.MessageId);
-            }
+                var queryText = update?.CallbackQuery?.Data;
 
-            //await botClient.SendTextMessageAsync(
-            //    message.Chat.Id,
-            //    "Test text",
-            //    parseMode: ParseMode.MarkdownV2,
-            //    disableNotification: false,
-            //    replyToMessageId: update.Message.MessageId,
-            //    replyMarkup: new InlineKeyboardMarkup(
-            //    InlineKeyboardButton.WithUrl(
-            //        text: "Check sendMessage method",
-            //        url: "https://core.telegram.org/bots/api#sendmessage")
-            //    ));
+                if (queryText == null)
+                {
+                    return;
+                }
 
-            return;
+                Console.WriteLine($"Lister: Bot | Query: {queryText}");
+
+                if (update.CallbackQuery != null)
+                {
+                    await botClient.EditMessageTextAsync(
+                        update.CallbackQuery.Message.Chat.Id,
+                        update.CallbackQuery.Message.MessageId,
+                        "New message");
+                    return;
+                }
+            }       
         }
 
         public static Task Error(ITelegramBotClient arg1, Exception arg2, CancellationToken arg3)
         {
             return null;
+        }
+
+        private static async Task<Message> DrawStartMenu(ITelegramBotClient botClient, Update update, CancellationToken token)
+        {
+            var markup = new InlineKeyboardMarkup(new List<List<InlineKeyboardButton>>()
+            {
+                new List<InlineKeyboardButton>()
+                {
+                    InlineKeyboardButton.WithCallbackData(
+                    text: "Games 🎲",
+                    callbackData: "/game_list" 
+                    ),
+                     InlineKeyboardButton.WithCallbackData(
+                    text: "Players 🤴",
+                    callbackData: "/players_list"
+                    ),
+
+                },
+                 new List<InlineKeyboardButton>()
+                {
+                    InlineKeyboardButton.WithCallbackData(
+                    text: "Vote for game 🗳️",
+                    callbackData: "/vote_for_game"
+                    ),
+                    InlineKeyboardButton.WithCallbackData(
+                    text: "Stats 💾",
+                    callbackData: "/stats"
+                    )                
+                }
+            });
+
+            return await botClient.SendTextMessageAsync(
+                chatId: update.Message.Chat.Id,
+                text: "👋 Welcome in Board Game Manager. There is list of bot features",
+                replyToMessageId: update?.Message?.MessageId,
+                replyMarkup: markup
+                );
         }
     }
 }

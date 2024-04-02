@@ -1,4 +1,5 @@
-﻿using BoardGames_TelegramBot;
+﻿using BoardGameManager_bot.Constants;
+using BoardGames_TelegramBot;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -8,9 +9,10 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
-        await botClient.SetMyCommandsAsync(GetMainCommands());
+        //await botClient.DeleteMyCommandsAsync();
+        //await botClient.SetMyCommandsAsync(GetMainCommands());
 
-        botClient.StartReceiving(MessageHandleService.Update, MessageHandleService.Error);
+        botClient.StartReceiving(QueryHandleService.Update, QueryHandleService.Error);
 
         Console.ReadLine();
     }
@@ -21,24 +23,9 @@ internal class Program
         {
             new BotCommand()
             {
-                Command = "/game_list",
-                Description = "List of games 🎲"
-            },
-            new BotCommand()
-            {
-                Command = "/vote_for_game",
-                Description = "Vote for game 🗳️"
-            },
-            new BotCommand()
-            {
-                Command = "/stats",
-                Description = "Stats 💾️"
-            },
-            new BotCommand()
-            {
-                Command = "/ban_random_member",
-                Description = "Ban random member 🐭️"
-            },
+                Command = TelegramBotConstants.START_COMMAND,
+                Description = "Manage games 🎲"
+            }
         };
     }
 }
