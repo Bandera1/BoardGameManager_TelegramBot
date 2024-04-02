@@ -39,6 +39,31 @@ namespace BoardGames_TelegramBot
             return null;
         }
 
+        private static async Task QueryHadler(ITelegramBotClient botClient, Update update, CancellationToken token)
+        {
+            var queryText = update?.CallbackQuery?.Data;
+
+            if (queryText == null)
+            {
+                return;
+            }
+
+            Console.WriteLine($"Lister: Bot | Query: {queryText}");
+
+            if (update.CallbackQuery != null)
+            {
+                switch (queryText)
+                {
+                    case TelegramBotConstants.GAMES_LIST_COMMAND:
+                        await GamesListMenu.DrawMenu(botClient, update, token, "");
+                        break;
+                    case TelegramBotConstants.START_COMMAND:
+                        await DrawStartMenu(botClient, update, token, isEdited: true);
+                        break;
+                }
+            }
+        }
+
         private static async Task<Message> DrawStartMenu(
             ITelegramBotClient botClient,
             Update update, CancellationToken token,
@@ -88,31 +113,6 @@ namespace BoardGames_TelegramBot
                 replyToMessageId: update?.Message?.MessageId,
                 replyMarkup: markup
                 );
-        }
-
-        private static async Task QueryHadler(ITelegramBotClient botClient, Update update, CancellationToken token)
-        {
-            var queryText = update?.CallbackQuery?.Data;
-
-            if (queryText == null)
-            {
-                return;
-            }
-
-            Console.WriteLine($"Lister: Bot | Query: {queryText}");
-
-            if (update.CallbackQuery != null)
-            {
-                switch (queryText)
-                {
-                    case TelegramBotConstants.GAMES_LIST_COMMAND:
-                        await GamesListMenu.DrawMenu(botClient, update, token, "");
-                        break;
-                    case TelegramBotConstants.START_COMMAND:
-                        await DrawStartMenu(botClient, update, token, isEdited: true);
-                        break;
-                }
-            }           
         }
     }
 }
