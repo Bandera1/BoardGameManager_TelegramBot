@@ -10,9 +10,10 @@ namespace BoardGameManager_bot.DAL
             Database.EnsureCreated();
         }
 
-        public DbSet<Game> Games { get; set; }
+        public DbSet<DbGame> Games { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<GameSession> GameSessions { get; set; }
+        public DbSet<Query> QueryHistory { get; set; }
 
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
@@ -24,23 +25,23 @@ namespace BoardGameManager_bot.DAL
             base.OnModelCreating(builder);
 
             // Roles - 1
-            builder.Entity<Game>().HasData(new List<Game>() {
-                new Game()
+            builder.Entity<DbGame>().HasData(new List<DbGame>() {
+                new DbGame()
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Кіклади"
                 },
-                new Game()
+                new DbGame()
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Екліпс"
                 },
-                new Game()
+                new DbGame()
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Прадавній жах"
                 },
-                new Game()
+                new DbGame()
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Істота"

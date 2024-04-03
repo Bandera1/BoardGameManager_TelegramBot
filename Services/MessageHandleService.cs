@@ -4,27 +4,49 @@ using Telegram.Bot.Types.ReplyMarkups;
 using BoardGameManager_bot.Utils;
 using BoardGameManager_bot.Constants;
 using BoardGameManager_bot.Menus.Games;
+using BoardGameManager_bot.DAL.Models;
+using BoardGameManager_bot.DAL.Repositories.Abstraction;
+using BoardGameManager_bot.Business.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BoardGames_TelegramBot
 {
     public class QueryHandleService
     {
+        private static readonly IRepository<Query> _queryRepository;
+
+        static QueryHandleService()
+        {
+            _queryRepository = DependencyInjectionService.GetInstance().serviceProvider.GetRequiredService<IRepository<Query>>();
+        }
+
         public static async Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
         {
             if (update?.Type == Telegram.Bot.Types.Enums.UpdateType.Message) // Check if it`s message
             {
                 await CommandHandler(botClient, update, token);
-            } 
+            }
             else if (update?.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)
             {
                 await QueryHadler(botClient, update, token);
-            }       
+            }
+
+            await _queryRepository.InsertAsync(new Query()
+            {
+                QueryText = CommandUtils.CutTheBotUsername(update?.Message?.Text) ?? update?.CallbackQuery?.Data,
+                ExecutedBy = update?.Message?.From?.Username ?? update?.CallbackQuery?.From?.Username,
+                Date = DateTime.Now
+            });
         }
 
-        public static Task Error(ITelegramBotClient arg1, Exception arg2, CancellationToken arg3)
+        public static async Task Error(ITelegramBotClient botClient, Exception exception, CancellationToken token)
         {
-            Console.WriteLine($"Error: {arg2.Message}");
-            return null;
+            Console.WriteLine($"Error: {exception.Message}");
+
+            await Task.Delay(1500);
+            botClient.StartReceiving(QueryHandleService.Update, QueryHandleService.Error);
+
+            throw exception;
         }
 
         private static async Task QueryHadler(
@@ -41,12 +63,26 @@ namespace BoardGames_TelegramBot
 
             Console.WriteLine($"Listen: Bot | Query: {queryText}");
 
+            if (queryText == TelegramBotConstants.BACK_TO_PREVIOUS_MENU)
+            {
+                queryText = _queryRepository
+                    .GetByCondition(x => x.ExecutedBy == update.CallbackQuery.From.Username && x.QueryText != TelegramBotConstants.BACK_TO_PREVIOUS_MENU)
+                    .Reverse()
+                    .Skip(1)
+                    .Take(1)
+                    .First()
+                    .QueryText;
+
+                Console.WriteLine($"Back to -> {queryText}");
+            }
+
+
             if (update.CallbackQuery != null)
             {
                 switch (queryText)
                 {
                     case TelegramBotConstants.GAMES_LIST_COMMAND:
-                        await GamesListMenu.DrawMenu(botClient, update, token, "");
+                        await GamesListMenu.DrawMenu(botClient, update, token);
                         break;
                     case TelegramBotConstants.START_COMMAND:
                         await DrawStartMenu(botClient, update, token, isEdited: true);
@@ -67,7 +103,7 @@ namespace BoardGames_TelegramBot
                 return;
             }
 
-            Console.WriteLine($"Listen: {update.Message.From.Username} | Message: {messageText}");
+            Console.WriteLine($"Listen: {update?.Message?.From?.Username} | Message: {messageText}");
 
             switch(messageText)
             {
@@ -115,15 +151,15 @@ namespace BoardGames_TelegramBot
                 return await botClient.EditMessageTextAsync(
                       chatId: update.CallbackQuery.Message.Chat.Id,
                       messageId: update.CallbackQuery.Message.MessageId,
-                      text: "👋 Welcome in Board Game Manager. There is list of bot features",
+                      text: "👋 Welcome in Board DbGame Manager. There is list of bot features",
                       replyMarkup: markup
                       );
             }
 
             return await botClient.SendTextMessageAsync(
                 chatId: update.Message.Chat.Id,
-                text: "👋 Welcome in Board Game Manager. There is list of bot features",
-                replyToMessageId: update?.Message?.MessageId,
+                text: "👋 Welcome in Board DbGame Manager. There is list of bot features",
+                replyToMessageId: update?.Message?.MessageId ?? null,
                 replyMarkup: markup
                 );
         }

@@ -10,7 +10,7 @@ namespace BoardGameManager_bot.Menus
 {
     public abstract class BotMenu
     {
-        public static Task<Message> DrawMenu(ITelegramBotClient botClient, Update update, CancellationToken token, string previousMenu)
+        public static Task<Message> DrawMenu(ITelegramBotClient botClient, Update update, CancellationToken token)
         {
             return null;
         }

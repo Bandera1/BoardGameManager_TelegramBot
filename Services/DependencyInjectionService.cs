@@ -5,19 +5,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Nelibur.ObjectMapper;
 using BoardGameManager_bot.DAL.Models;
 using Microsoft.EntityFrameworkCore;
+using BoardGameManager_bot.DAL.Repositories.Abstraction;
 
-namespace BoardGameManager_bot.Business
+namespace BoardGameManager_bot.Business.Services
 {
     // Implement Singltone pattern
     public class DependencyInjectionService
     {
         private static DependencyInjectionService _instance;
-        public ServiceCollection services;
+        public ServiceProvider serviceProvider;
 
-        private DependencyInjectionService()
-        {
-
-        }
+        private DependencyInjectionService() { }
 
         public static DependencyInjectionService GetInstance()
         {
@@ -32,17 +30,20 @@ namespace BoardGameManager_bot.Business
         private async Task<ServiceProvider> ConfigureService()
         {
             #region DI
-            services = new();
-            services.AddTransient<IRepository<Game>, GamesRepository>();
+            ServiceCollection services = new();
+            services.AddTransient<IRepository<DbGame>, GamesRepository>();
+            services.AddTransient<IRepository<Query>, QueryRepository>();
+
             services.AddDbContext<EFDbContext>(options =>
                         options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=BoardGameManager_DB;Trusted_Connection=True;"));
             #endregion
 
             #region TinyMapper
-            TinyMapper.Bind<Game, BotGame>();
+            TinyMapper.Bind<DbGame, BotGame>();
             #endregion
 
-            return services.BuildServiceProvider();
+            serviceProvider = services.BuildServiceProvider();
+            return serviceProvider;
         }
     }
 }

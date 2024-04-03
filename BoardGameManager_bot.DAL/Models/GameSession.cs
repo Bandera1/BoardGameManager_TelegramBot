@@ -19,7 +19,7 @@ namespace BoardGameManager_bot.DAL.Models
         public string? WinnerId { get; set; }
         public string? TimeTakenInHour { get; set; }
 
-        public Game? Game { get; set; }
+        public DbGame? Game { get; set; }
         public Player? Winner { get; set; }
     }
 }

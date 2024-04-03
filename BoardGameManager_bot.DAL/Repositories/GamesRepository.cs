@@ -1,9 +1,10 @@
 ﻿using BoardGameManager_bot.DAL.Models;
+using BoardGameManager_bot.DAL.Repositories.Abstraction;
 using Microsoft.EntityFrameworkCore;
 
 namespace BoardGameManager_bot.DAL.Repositories
 {
-    public class GamesRepository : IRepository<Game>
+    public class GamesRepository : IRepository<DbGame>
     {
         private readonly EFDbContext _context;
 
@@ -17,19 +18,14 @@ namespace BoardGameManager_bot.DAL.Repositories
             await _context.Games.Where(x => x.Id == EntityId).ExecuteDeleteAsync();
         }
 
-        public async Task DeleteAsync(Game Entity)
+        public async Task DeleteAsync(DbGame Entity)
         {
             await _context.Games.Where(x => x.Id == Entity.Id).ExecuteDeleteAsync();
         }
 
-        public async Task<IEnumerable<Game>> GetAllAsync()
+        public IEnumerable<DbGame> GetByCondition(Func<DbGame,bool> condition)
         {
-            return await _context.Games.ToListAsync();
-        }
-
-        public async Task<Game> GetByIdAsync(string EntityId)
-        {
-            return await _context.Games.FirstOrDefaultAsync(x => x.Id == EntityId);
+            return _context.Games.Where(condition);
         }
 
         public async Task<int> GetCountAsync()
@@ -37,10 +33,10 @@ namespace BoardGameManager_bot.DAL.Repositories
             return await _context.Games.CountAsync();
         }
 
-        public async Task InsertAsync(Game Entity)
-        {
+        public async Task InsertAsync(DbGame Entity)
+        {          
             await _context.Games.AddAsync(Entity);
-            SaveAsync();
+            await SaveAsync();
         }
 
         public async Task SaveAsync()

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BoardGameManager_bot.DAL.Models
 {
-    public class Game
+    public class DbGame
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

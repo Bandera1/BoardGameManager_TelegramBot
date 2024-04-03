@@ -5,10 +5,10 @@ namespace BoardGameManager_bot.ModelsAndButtons.Misc
 {
     public class BackButton : MenuObject
     {
-        public BackButton(string previouseMenu)
+        public BackButton()
         {
             this.Name = "Back 🔙";
-            this.Query = $"{TelegramBotConstants.BACK_TO_PREVIOUS_MENU}@{previouseMenu}";
+            this.Query = $"{TelegramBotConstants.BACK_TO_PREVIOUS_MENU}";
         }
     }
 }

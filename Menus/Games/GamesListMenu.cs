@@ -1,53 +1,48 @@
-﻿using BoardGameManager_bot.DAL.Repositories;
+﻿using BoardGameManager_bot.Business.Services;
+using BoardGameManager_bot.Business.Utils;
+using BoardGameManager_bot.DAL.Repositories.Abstraction;
+using BoardGameManager_bot.Models;
 using BoardGameManager_bot.ModelsAndButtons.Abstraction;
 using BoardGameManager_bot.ModelsAndButtons.Misc;
+using Microsoft.Extensions.DependencyInjection;
+using Nelibur.ObjectMapper;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-using Game = BoardGameManager_bot.DAL.Models.Game;
+using DbGame = BoardGameManager_bot.DAL.Models.DbGame;
 
 namespace BoardGameManager_bot.Menus.Games
 {
     public class GamesListMenu : BotMenu
     {
-        //private readonly IRepository<Game> _repository;
+        private static readonly IRepository<DbGame> _repository;
 
-        //public GamesListMenu(IRepository<Game> repository)
-        //{
-        //    _repository = repository;
-        //}
+        static GamesListMenu()
+        {
+            _repository = DependencyInjectionService.GetInstance().serviceProvider.GetRequiredService<IRepository<DbGame>>();
+        }
 
         public static async Task<Message> DrawMenu(
             ITelegramBotClient botClient,
             Update update,
-            CancellationToken token, string previouseMenu
+            CancellationToken token
             )
-        {      
-            var menuObjects = new List<MenuObject>()
+        {
+            var gamesList = new List<MenuObject>();
+
+            var games = _repository.GetByCondition(x => 1 == 1);
+            gamesList.AddRange(games.Select(dbGame =>
             {
-                new AddNewGameButton()         
-            };
+                return TinyMapper.Map<BotGame>(dbGame);
+            }));
 
-            var buttons = new List<List<InlineKeyboardButton>>();
-
-            foreach (var menuObject in menuObjects)
-            {
-                buttons.Add(new List<InlineKeyboardButton>()
-                {
-                   InlineKeyboardButton.WithCallbackData(
-                   text: menuObject.Name,
-                   callbackData: menuObject.Query
-                 )
-                });
-            }
-
-            menuObjects.Add(new BackButton(previouseMenu));
+            var inlineButtons = await MenuUtils.GenerateInlineColumnKeyboard(gamesList.ToArray(), new AddNewGameButton(), true);
 
             return await botClient.EditMessageTextAsync(
                        chatId: update.CallbackQuery.Message.Chat.Id,
                        messageId: update.CallbackQuery.Message.MessageId,
-                       text: "Game list: ",
-                       replyMarkup: new InlineKeyboardMarkup(buttons)
+                       text: "Games list:",
+                       replyMarkup: new InlineKeyboardMarkup(inlineButtons)
                        );
         }
     }

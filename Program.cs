@@ -1,17 +1,9 @@
-﻿using BoardGameManager_bot.Business;
+﻿using BoardGameManager_bot.Business.Services;
 using BoardGameManager_bot.Constants;
-using BoardGameManager_bot.DAL;
-using BoardGameManager_bot.DAL.Repositories;
-using BoardGameManager_bot.Models;
 using BoardGames_TelegramBot;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Nelibur.ObjectMapper;
-using System;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-
-using Game = BoardGameManager_bot.DAL.Models.Game;
+using Telegram.Bot.Types.Enums;
 
 internal class Program
 {
@@ -24,7 +16,8 @@ internal class Program
         //await botClient.DeleteMyCommandsAsync();
         //await botClient.SetMyCommandsAsync(GetMainCommands());
 
-        await botClient.GetUpdatesAsync();
+        await botClient.GetUpdatesAsync(limit: 1);
+
         botClient.StartReceiving(QueryHandleService.Update, QueryHandleService.Error);
 
         Console.ReadLine();
