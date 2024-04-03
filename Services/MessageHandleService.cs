@@ -4,7 +4,6 @@ using Telegram.Bot.Types.ReplyMarkups;
 using BoardGameManager_bot.Utils;
 using BoardGameManager_bot.Constants;
 using BoardGameManager_bot.Menus.Games;
-using BoardGameManager_bot.DAL;
 
 namespace BoardGames_TelegramBot
 {
@@ -12,24 +11,11 @@ namespace BoardGames_TelegramBot
     {
         public static async Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
         {
-            // Draw start menu
             if (update?.Type == Telegram.Bot.Types.Enums.UpdateType.Message) // Check if it`s message
             {
-                var messageText = CommandUtils.CutTheBotUsername(update.Message.Text);
-
-                if(messageText == null)
-                {
-                    return;
-                }
-
-                Console.WriteLine($"Listen: {update.Message.From.Username} | Message: {messageText}");
-
-                if (messageText == TelegramBotConstants.START_COMMAND)
-                {
-                    await DrawStartMenu(botClient, update, token);
-                    return;
-                }
-            } else if (update?.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)
+                await CommandHandler(botClient, update, token);
+            } 
+            else if (update?.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)
             {
                 await QueryHadler(botClient, update, token);
             }       
@@ -37,10 +23,14 @@ namespace BoardGames_TelegramBot
 
         public static Task Error(ITelegramBotClient arg1, Exception arg2, CancellationToken arg3)
         {
+            Console.WriteLine($"Error: {arg2.Message}");
             return null;
         }
 
-        private static async Task QueryHadler(ITelegramBotClient botClient, Update update, CancellationToken token)
+        private static async Task QueryHadler(
+            ITelegramBotClient botClient,
+            Update update,
+            CancellationToken token)
         {
             var queryText = update?.CallbackQuery?.Data;
 
@@ -63,6 +53,28 @@ namespace BoardGames_TelegramBot
                         break;
                 }
             }
+        }
+
+        private static async Task CommandHandler(
+            ITelegramBotClient botClient,
+            Update update,
+            CancellationToken token)
+        {
+            var messageText = CommandUtils.CutTheBotUsername(update.Message.Text);
+
+            if (messageText == null)
+            {
+                return;
+            }
+
+            Console.WriteLine($"Listen: {update.Message.From.Username} | Message: {messageText}");
+
+            switch(messageText)
+            {
+                case TelegramBotConstants.START_COMMAND:
+                    await DrawStartMenu(botClient, update, token);
+                    break;
+            }         
         }
 
         private static async Task<Message> DrawStartMenu(

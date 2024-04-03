@@ -17,8 +17,12 @@ namespace BoardGameManager_bot.Menus.Games
         //    _repository = repository;
         //}
 
-        public static async Task<Message> DrawMenu(ITelegramBotClient botClient, Update update, CancellationToken token, string previouseMenu)
-        {
+        public static async Task<Message> DrawMenu(
+            ITelegramBotClient botClient,
+            Update update,
+            CancellationToken token, string previouseMenu
+            )
+        {      
             var menuObjects = new List<MenuObject>()
             {
                 new AddNewGameButton()         
