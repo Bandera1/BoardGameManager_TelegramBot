@@ -14,9 +14,12 @@ namespace BoardGameManager_bot.DAL.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public string Id { get; set; }
         public string GameId { get; set; }
-        public DateTime Date { get; set; }
-        public int PlayersCount { get; set; }
-        public string WinnerId { get; set; }
-        public string TimeTakenInHour { get; set; }
+        public DateTime? Date { get; set; }
+        public int? PlayersCount { get; set; }
+        public string? WinnerId { get; set; }
+        public string? TimeTakenInHour { get; set; }
+
+        public Game? Game { get; set; }
+        public Player? Winner { get; set; }
     }
 }
