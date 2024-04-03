@@ -16,7 +16,10 @@ internal class Program
         //await botClient.DeleteMyCommandsAsync();
         //await botClient.SetMyCommandsAsync(GetMainCommands());
 
-        await botClient.GetUpdatesAsync(limit: 1);
+        //await botClient.GetUpdatesAsync(allowedUpdates: new List<UpdateType>
+        //{
+        //    UpdateType.Unknown
+        //});
 
         botClient.StartReceiving(QueryHandleService.Update, QueryHandleService.Error);
 

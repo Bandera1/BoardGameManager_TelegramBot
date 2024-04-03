@@ -30,7 +30,7 @@ namespace BoardGameManager_bot.Menus.Games
         {
             var gamesList = new List<MenuObject>();
 
-            var games = _repository.GetByCondition(x => 1 == 1);
+            var games = _repository.GetByCondition(x => 1 == 1).ToList();
             gamesList.AddRange(games.Select(dbGame =>
             {
                 return TinyMapper.Map<BotGame>(dbGame);
@@ -38,12 +38,20 @@ namespace BoardGameManager_bot.Menus.Games
 
             var inlineButtons = await MenuUtils.GenerateInlineColumnKeyboard(gamesList.ToArray(), new AddNewGameButton(), true);
 
-            return await botClient.EditMessageTextAsync(
+            try
+            {
+                await botClient.EditMessageTextAsync(
                        chatId: update.CallbackQuery.Message.Chat.Id,
                        messageId: update.CallbackQuery.Message.MessageId,
                        text: "Games list:",
                        replyMarkup: new InlineKeyboardMarkup(inlineButtons)
                        );
+            }
+            catch (Exception)
+            {
+            }
+
+            return null;
         }
     }
 }

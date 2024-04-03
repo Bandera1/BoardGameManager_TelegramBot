@@ -26,7 +26,7 @@ namespace BoardGames_TelegramBot
             {
                 await CommandHandler(botClient, update, token);
             }
-            else if (update?.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)
+            else if (update?.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery) // Check if it`s query
             {
                 await QueryHadler(botClient, update, token);
             }
@@ -44,6 +44,7 @@ namespace BoardGames_TelegramBot
             Console.WriteLine($"Error: {exception.Message}");
 
             await Task.Delay(1500);
+            await botClient.CloseAsync();
             botClient.StartReceiving(QueryHandleService.Update, QueryHandleService.Error);
 
             throw exception;
@@ -66,10 +67,11 @@ namespace BoardGames_TelegramBot
             if (queryText == TelegramBotConstants.BACK_TO_PREVIOUS_MENU)
             {
                 queryText = _queryRepository
-                    .GetByCondition(x => x.ExecutedBy == update.CallbackQuery.From.Username && x.QueryText != TelegramBotConstants.BACK_TO_PREVIOUS_MENU)
-                    .Reverse()
-                    .Skip(1)
-                    .Take(1)
+                    .GetByCondition(
+                    x => x.ExecutedBy == update?.CallbackQuery?.From?.Username 
+                    && x.QueryText != TelegramBotConstants.BACK_TO_PREVIOUS_MENU)
+                    .ToList()
+                    .OrderBy(x => x.Date)
                     .First()
                     .QueryText;
 
@@ -125,15 +127,15 @@ namespace BoardGames_TelegramBot
                 {
                     InlineKeyboardButton.WithCallbackData(
                     text: "Games 🎲",
-                    callbackData: "/game_list" 
+                    callbackData: "/game_list"
                     ),
                      InlineKeyboardButton.WithCallbackData(
                     text: "Players 🤴",
                     callbackData: "/players_list"
-                    ),
+                    )
 
                 },
-                 new List<InlineKeyboardButton>()
+                new List<InlineKeyboardButton>()
                 {
                     InlineKeyboardButton.WithCallbackData(
                     text: "Vote for game 🗳️",
@@ -149,16 +151,16 @@ namespace BoardGames_TelegramBot
             if(isEdited)
             {
                 return await botClient.EditMessageTextAsync(
-                      chatId: update.CallbackQuery.Message.Chat.Id,
+                      chatId: update?.CallbackQuery?.Message?.Chat?.Id,
                       messageId: update.CallbackQuery.Message.MessageId,
-                      text: "👋 Welcome in Board DbGame Manager. There is list of bot features",
+                      text: "👋 Welcome in Board Game Manager. There is list of bot features",
                       replyMarkup: markup
                       );
             }
 
             return await botClient.SendTextMessageAsync(
-                chatId: update.Message.Chat.Id,
-                text: "👋 Welcome in Board DbGame Manager. There is list of bot features",
+                chatId: update?.Message?.Chat?.Id,
+                text: "👋 Welcome in Board Game Manager. There is list of bot features",
                 replyToMessageId: update?.Message?.MessageId ?? null,
                 replyMarkup: markup
                 );

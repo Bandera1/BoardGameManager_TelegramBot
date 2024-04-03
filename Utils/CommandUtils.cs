@@ -12,6 +12,11 @@ namespace BoardGameManager_bot.Utils
     {
         public static string CutTheBotUsername(string command)
         {
+            if(command == null)
+            {
+                return null;
+            }
+
             return command.Replace(TelegramBotConstants.TELEGRAM_BOT_USERNAME, String.Empty);
         }
     }
